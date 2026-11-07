@@ -8,7 +8,8 @@ export const identity = {
   email: 'anshkumar123216@gmail.com',
   linkedin: 'https://linkedin.com/in/anshkumar-sdet/',
   github: 'https://github.com/codeansh20',
-  resumeFile: '/Ansh_Kumar_Resume.pdf',
+  // BASE_URL so the path works at '/' locally and '/ansh-portfolio/' on GitHub Pages
+  resumeFile: `${import.meta.env.BASE_URL}Ansh_Kumar_Resume.pdf`,
   summary:
     'SDET with 2.5+ years designing scalable UI and API test automation frameworks. I build the systems that keep 25,000+ test cases honest — flaky-test detection, smart regression selection, and CI pipelines teams can actually trust.',
 }

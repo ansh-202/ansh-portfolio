@@ -1,11 +1,17 @@
 import { ArrowUpRight } from 'lucide-react'
 import { Reveal, SectionHeader, Tilt } from './ui'
+import { SpotlightCard } from './effects'
 import { identity, projects } from '../data/resume'
 
 export default function Projects() {
   return (
     <section id="projects" className="mx-auto max-w-6xl px-4 sm:px-6 py-24 sm:py-32">
-      <SectionHeader index="04" title="Case Studies" ghost="SYSTEMS" note="// problem → approach → impact" />
+      <SectionHeader
+        index="04"
+        title="Case Studies"
+        ghost="SYSTEMS"
+        note="// problem → approach → impact"
+      />
       <div className="mt-14 space-y-16">
         {projects.map((p, i) => (
           <Reveal key={p.id} from={i % 2 === 0 ? 'left' : 'right'}>
@@ -39,18 +45,20 @@ export default function Projects() {
                   </div>
                 </div>
                 <Tilt max={6} className="mt-6">
-                  <div className="border border-line rounded-lg bg-ink-2/90 hover:border-pass-dim transition-colors p-4 sm:p-5">
-                    <p className="font-mono text-[10px] uppercase tracking-widest text-pass">
-                      ✓ impact
-                    </p>
-                    <ul className="mt-2 flex flex-wrap gap-x-8 gap-y-1.5">
-                      {p.impact.map((im) => (
-                        <li key={im} className="font-mono text-[13px] text-fog">
-                          {im}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+                  <SpotlightCard>
+                    <div className="p-4 sm:p-5">
+                      <p className="font-mono text-[10px] uppercase tracking-widest text-pass">
+                        ✓ impact
+                      </p>
+                      <ul className="mt-2 flex flex-wrap gap-x-8 gap-y-1.5">
+                        {p.impact.map((im) => (
+                          <li key={im} className="font-mono text-[13px] text-fog">
+                            {im}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </SpotlightCard>
                 </Tilt>
                 <div className="mt-4 flex lg:hidden flex-wrap gap-x-4 gap-y-1">
                   {p.stack.map((s) => (

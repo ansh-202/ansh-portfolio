@@ -55,18 +55,27 @@ export function MaskReveal({
   className?: string
 }) {
   const reduced = useReducedMotion()
+  // The in-view trigger sits on the mask, not the moving span: the span starts
+  // fully clipped by overflow:hidden, and IntersectionObserver would report it
+  // as never visible.
   return (
-    <span className={`inline-block overflow-hidden align-bottom ${className ?? ''}`}>
+    <motion.span
+      className={`inline-block overflow-hidden align-bottom ${className ?? ''}`}
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, margin: '-60px' }}
+    >
       <motion.span
         className="inline-block will-change-transform"
-        initial={reduced ? { opacity: 0 } : { y: '115%', rotate: 4 }}
-        whileInView={reduced ? { opacity: 1 } : { y: 0, rotate: 0 }}
-        viewport={{ once: true, margin: '-60px' }}
+        variants={{
+          hidden: reduced ? { opacity: 0 } : { y: '115%', rotate: 4 },
+          visible: reduced ? { opacity: 1 } : { y: 0, rotate: 0 },
+        }}
         transition={{ duration: 0.9, delay, ease: [0.22, 1, 0.36, 1] }}
       >
         {children}
       </motion.span>
-    </span>
+    </motion.span>
   )
 }
 

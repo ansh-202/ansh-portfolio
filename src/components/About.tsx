@@ -1,4 +1,6 @@
 import { Reveal, SectionHeader, Tilt } from './ui'
+import { Bug } from './BugHunt'
+import { TextScrollReveal } from './effects'
 import { about, education } from '../data/resume'
 
 const stats = [
@@ -10,22 +12,23 @@ const stats = [
 
 export default function About() {
   return (
-    <section id="about" className="mx-auto max-w-6xl px-4 sm:px-6 py-24 sm:py-32">
+    <section id="about" className="relative mx-auto max-w-6xl px-4 sm:px-6 py-24 sm:py-32">
+      <Bug id="about" className="absolute right-4 sm:right-10 top-40" />
       <SectionHeader index="01" title="About" ghost="RELIABLE" note="// engineering philosophy" />
       <div className="mt-12 grid lg:grid-cols-[1.4fr_1fr] gap-12 lg:gap-16">
         <div className="space-y-6">
           {about.philosophy.map((p, i) => (
-            <Reveal key={i} delay={i * 0.08}>
-              <p
-                className={
-                  i === 0
-                    ? 'font-display text-2xl sm:text-3xl font-semibold tracking-tight leading-snug text-fog'
-                    : 'text-mist leading-relaxed text-base sm:text-lg'
-                }
-              >
-                {p}
-              </p>
-            </Reveal>
+            i === 0 ? (
+              <TextScrollReveal
+                key={i}
+                text={p}
+                className="font-display text-2xl sm:text-3xl font-semibold tracking-tight leading-snug text-fog"
+              />
+            ) : (
+              <Reveal key={i} delay={i * 0.08}>
+                <p className="text-mist leading-relaxed text-base sm:text-lg">{p}</p>
+              </Reveal>
+            )
           ))}
           <Reveal delay={0.3}>
             <p className="font-mono text-xs text-dim pt-2">

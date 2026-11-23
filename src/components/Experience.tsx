@@ -1,74 +1,25 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { Bug } from './BugHunt'
 import {
   AnimatePresence,
   motion,
   useMotionValue,
   useReducedMotion,
   useSpring,
+  animate,
 } from 'framer-motion'
-import type { Variants } from 'framer-motion'
 import { Reveal, SectionHeader, Tag } from './ui'
 import { experience } from '../data/resume'
 import type { Role } from '../data/resume'
 
 /* Each company's work hides behind a living eye. It blinks idly, its pupil
- * follows your cursor, and on click it snaps wide open — the log entries then
- * hatch out of the container onto the pipeline track with spring physics. */
+ * follows your cursor, and on click it snaps wide open: the log entries fall
+ * in like shooting stars, streaking down from the top right, and land as a
+ * deck of cards you can drag or step through. */
 
 const EYE_OPEN = 'M3 20 C 16 4 48 4 61 20 C 48 36 16 36 3 20 Z'
 const EYE_SHUT = 'M3 20 C 16 18 48 18 61 20 C 48 22 16 22 3 20 Z'
-
-const listVariants: Variants = {
-  hidden: {},
-  visible: { transition: { staggerChildren: 0.12, delayChildren: 0.15 } },
-}
-
-/* li only lifts/fades; the clip wipe lives on the inner card so the
- * track dot (outside the card box) never gets clipped away. */
-const entryVariants = (reduced: boolean): Variants => ({
-  hidden: reduced ? { opacity: 0 } : { opacity: 0, y: 18 },
-  visible: reduced
-    ? { opacity: 1 }
-    : { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } },
-})
-
-/* motionlab "Reveal — clip wipe + blur-to-sharp": the card unmasks
- * left-to-right while focusing in. */
-const cardVariants = (reduced: boolean): Variants => ({
-  hidden: reduced
-    ? {}
-    : { clipPath: 'inset(0 100% 0 0)', filter: 'blur(10px)' },
-  visible: reduced
-    ? {}
-    : {
-        clipPath: 'inset(0 0% 0 0)',
-        filter: 'blur(0px)',
-        transition: { duration: 0.75, ease: [0.22, 1, 0.36, 1] },
-      },
-})
-
-const dotVariants = (reduced: boolean): Variants => ({
-  hidden: reduced ? { opacity: 0 } : { scale: 0, opacity: 0 },
-  visible: reduced
-    ? { opacity: 1 }
-    : {
-        scale: [0, 1.6, 1],
-        opacity: 1,
-        transition: { duration: 0.5, times: [0, 0.6, 1], ease: 'easeOut' },
-      },
-})
-
-const checkVariants = (reduced: boolean): Variants => ({
-  hidden: reduced ? { opacity: 0 } : { scale: 0, rotate: -120, opacity: 0 },
-  visible: reduced
-    ? { opacity: 1 }
-    : {
-        scale: 1,
-        rotate: 0,
-        opacity: 1,
-        transition: { type: 'spring', stiffness: 400, damping: 12, delay: 0.18 },
-      },
-})
 
 function Eye({
   open,
@@ -129,8 +80,8 @@ function Eye({
         <motion.circle
           cx="32"
           cy="20"
-          fill="#171b17"
-          stroke="#51e07e"
+          fill="var(--color-ink-3)"
+          stroke="var(--color-pass)"
           strokeWidth="1.5"
           animate={{ r: open ? 11.5 : 9 }}
           transition={{ type: 'spring', stiffness: 300, damping: 15 }}
@@ -138,7 +89,7 @@ function Eye({
         <motion.circle
           cx="32"
           cy="20"
-          fill="#51e07e"
+          fill="var(--color-pass)"
           animate={{ r: open ? 5 : 3.5 }}
           transition={{ type: 'spring', stiffness: 300, damping: 15 }}
         />
@@ -146,7 +97,7 @@ function Eye({
       </motion.g>
       <motion.path
         fill="none"
-        stroke="#51e07e"
+        stroke="var(--color-pass)"
         strokeWidth="1.8"
         strokeLinejoin="round"
         animate={{ d: shut ? EYE_SHUT : EYE_OPEN, opacity: open ? 1 : 0.75 }}
@@ -154,7 +105,7 @@ function Eye({
       />
       {/* lashes flare out when wide open */}
       <motion.g
-        stroke="#51e07e"
+        stroke="var(--color-pass)"
         strokeWidth="1.4"
         strokeLinecap="round"
         animate={{ opacity: open ? 1 : 0, scale: open ? 1 : 0.6 }}
@@ -166,6 +117,140 @@ function Eye({
         <line x1="50" y1="6" x2="47" y2="10" />
       </motion.g>
     </motion.svg>
+  )
+}
+
+const TILT = [-3, 2, -1.5, 3, -2, 1.5]
+
+/** One log entry as a shooting star: a glowing head with a tail streaks in from
+ *  the top right, lands with a spring and a ring of impact, then rests tilted
+ *  like a dealt card. */
+function Meteor({ entry, i, reduced }: { entry: Role['log'][number]; i: number; reduced: boolean }) {
+  const delay = 0.1 + i * 0.22
+  const flight = 0.75
+  return (
+    <motion.li
+      className="relative shrink-0 w-[78vw] max-w-[300px] sm:w-[300px]"
+      initial={reduced ? { opacity: 0 } : { x: 420, y: -480, rotate: -32, scale: 0.25, opacity: 0 }}
+      animate={reduced ? { opacity: 1 } : { x: 0, y: 0, rotate: TILT[i % TILT.length], scale: 1, opacity: 1 }}
+      whileHover={reduced ? undefined : { rotate: 0, y: -8 }}
+      transition={
+        reduced
+          ? { duration: 0.3, delay: i * 0.05 }
+          : { type: 'spring', stiffness: 105, damping: 13, mass: 0.9, delay }
+      }
+    >
+      {!reduced && (
+        <>
+          {/* tail, pointing back along the flight path */}
+          <motion.span
+            aria-hidden
+            className="pointer-events-none absolute -top-36 right-2 h-44 w-[3px] origin-bottom rotate-[41deg] rounded-full bg-gradient-to-t from-pass via-pass/40 to-transparent"
+            initial={{ opacity: 1, scaleY: 1 }}
+            animate={{ opacity: 0, scaleY: 0.2 }}
+            transition={{ delay: delay + flight * 0.6, duration: 0.5 }}
+          />
+          {/* glowing head while in flight */}
+          <motion.span
+            aria-hidden
+            className="pointer-events-none absolute inset-0 rounded-xl bg-pass/50 blur-xl"
+            initial={{ opacity: 1 }}
+            animate={{ opacity: 0 }}
+            transition={{ delay: delay + flight * 0.5, duration: 0.6 }}
+          />
+          {/* landing ring */}
+          <motion.span
+            aria-hidden
+            className="pointer-events-none absolute -inset-1 rounded-xl border-2 border-pass"
+            initial={{ opacity: 0, scale: 0.92 }}
+            animate={{ opacity: [0, 0.9, 0], scale: [0.92, 1.08, 1.16] }}
+            transition={{ delay: delay + flight, duration: 0.6 }}
+          />
+        </>
+      )}
+      <div className="relative h-full min-h-[200px] rounded-xl border border-line-2 bg-ink-2 p-5 flex flex-col shadow-[0_18px_40px_-20px_rgba(0,0,0,0.9)]">
+        <div className="flex items-center justify-between font-mono text-[10px] uppercase tracking-widest">
+          <span className="text-dim">#{String(i + 1).padStart(2, '0')}</span>
+          {entry.tag && <span className="text-pass">{entry.tag}</span>}
+        </div>
+        <p className="mt-3 text-sm text-mist leading-relaxed flex-1">{entry.text}</p>
+        <p className="mt-4 font-mono text-[11px] text-pass">✓ passed</p>
+      </div>
+    </motion.li>
+  )
+}
+
+/** The landed entries form a deck you can drag sideways or step through. */
+function MeteorDeck({ role }: { role: Role }) {
+  const reduced = !!useReducedMotion()
+  const viewport = useRef<HTMLDivElement>(null)
+  const track = useRef<HTMLOListElement>(null)
+  const x = useMotionValue(0)
+  const [index, setIndex] = useState(0)
+  const count = role.log.length
+
+  const step = () => {
+    const first = track.current?.children[0] as HTMLElement | undefined
+    return first ? first.offsetWidth + 16 : 316
+  }
+  const minX = () => Math.min(0, (viewport.current?.clientWidth ?? 0) - (track.current?.scrollWidth ?? 0))
+
+  useEffect(() => x.on('change', (v) => setIndex(Math.min(count - 1, Math.round(-v / step())))), [x, count])
+
+  // the deck is wider than its frame, so drag limits are explicit pixels
+  const [left, setLeft] = useState(0)
+  useEffect(() => {
+    const ro = new ResizeObserver(() => setLeft(minX()))
+    if (viewport.current) ro.observe(viewport.current)
+    if (track.current) ro.observe(track.current)
+    return () => ro.disconnect()
+  }, [])
+
+  const go = (dir: 1 | -1) => {
+    const target = Math.max(minX(), Math.min(0, -(index + dir) * step()))
+    animate(x, target, reduced ? { duration: 0 } : { type: 'spring', stiffness: 220, damping: 28 })
+  }
+
+  return (
+    <div className="pt-6">
+      <div ref={viewport} className="overflow-x-clip">
+        <motion.ol
+          ref={track}
+          drag="x"
+          dragConstraints={{ left, right: 0 }}
+          dragElastic={0.12}
+          style={{ x }}
+          className="flex gap-4 py-3 pl-1 pr-8 cursor-grab active:cursor-grabbing"
+          aria-label={`${role.company} work log`}
+        >
+          {role.log.map((entry, i) => (
+            <Meteor key={i} entry={entry} i={i} reduced={reduced} />
+          ))}
+        </motion.ol>
+      </div>
+      <div className="mt-4 flex items-center gap-3 font-mono text-xs text-dim">
+        <button
+          onClick={() => go(-1)}
+          disabled={index === 0}
+          aria-label="Previous entry"
+          className="h-8 w-8 grid place-items-center rounded-full border border-line-2 hover:border-pass hover:text-pass disabled:opacity-30 transition-colors"
+        >
+          <ChevronLeft size={15} />
+        </button>
+        <button
+          onClick={() => go(1)}
+          disabled={index >= count - 1}
+          aria-label="Next entry"
+          className="h-8 w-8 grid place-items-center rounded-full border border-line-2 hover:border-pass hover:text-pass disabled:opacity-30 transition-colors"
+        >
+          <ChevronRight size={15} />
+        </button>
+        <span>
+          <span className="text-pass">{String(index + 1).padStart(2, '0')}</span> / {String(count).padStart(2, '0')}
+        </span>
+        <span className="ml-auto hidden sm:inline">drag the deck ⇆</span>
+      </div>
+    </div>
   )
 }
 
@@ -218,68 +303,11 @@ function WorkLog({ role }: { role: Role }) {
         {open && (
           <motion.div
             key="log"
-            initial={reduced ? { opacity: 0 } : { height: 0, opacity: 0 }}
-            animate={reduced ? { opacity: 1 } : { height: 'auto', opacity: 1 }}
-            exit={reduced ? { opacity: 0 } : { height: 0, opacity: 0 }}
-            transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-            className="overflow-hidden"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0, transition: { duration: 0.2 } }}
           >
-            <motion.ol
-              variants={listVariants}
-              initial="hidden"
-              animate="visible"
-              className="relative pl-9 sm:pl-11 pt-4 space-y-3"
-            >
-              {/* motionlab "SVG & Path — scroll-driven path drawing":
-                  the pipeline track draws itself down as entries land */}
-              <svg
-                aria-hidden
-                className="absolute left-[13px] sm:left-[17px] top-7 bottom-3 w-[2px] h-[calc(100%-2.5rem)]"
-                viewBox="0 0 2 100"
-                preserveAspectRatio="none"
-              >
-                <motion.path
-                  d="M1 0 V100"
-                  stroke="#51e07e"
-                  strokeOpacity="0.55"
-                  strokeWidth="2"
-                  fill="none"
-                  vectorEffect="non-scaling-stroke"
-                  initial={{ pathLength: 0 }}
-                  animate={{ pathLength: 1 }}
-                  transition={{ duration: 0.15 + role.log.length * 0.13, ease: 'linear' }}
-                />
-              </svg>
-              {role.log.map((entry, i) => (
-                <motion.li key={i} custom={i} variants={entryVariants(reduced)} className="relative">
-                  <motion.span
-                    variants={dotVariants(reduced)}
-                    className="absolute -left-9 sm:-left-11 top-5 ml-[7px] sm:ml-[11px] h-3 w-3 rounded-full border-2 border-pass bg-ink shadow-[0_0_12px_rgba(81,224,126,0.6)]"
-                  />
-                  <motion.div
-                    variants={cardVariants(reduced)}
-                    className="group bg-ink-2/90 hover:bg-ink-3 border border-line hover:border-pass-dim rounded-lg transition-colors p-4 sm:p-5 flex gap-4"
-                  >
-                    <motion.span
-                      variants={checkVariants(reduced)}
-                      className="text-pass font-mono text-sm pt-0.5 select-none origin-center"
-                    >
-                      ✓
-                    </motion.span>
-                    <div>
-                      {entry.tag && (
-                        <span className="font-mono text-[10px] uppercase tracking-widest text-dim group-hover:text-pass transition-colors">
-                          {entry.tag}
-                        </span>
-                      )}
-                      <p className="mt-1 text-sm text-mist leading-relaxed group-hover:text-fog transition-colors">
-                        {entry.text}
-                      </p>
-                    </div>
-                  </motion.div>
-                </motion.li>
-              ))}
-            </motion.ol>
+            <MeteorDeck role={role} />
           </motion.div>
         )}
       </AnimatePresence>
@@ -289,11 +317,12 @@ function WorkLog({ role }: { role: Role }) {
 
 export default function Experience() {
   return (
-    <section id="experience" className="mx-auto max-w-6xl px-4 sm:px-6 py-24 sm:py-32">
+    <section id="experience" className="relative mx-auto max-w-6xl px-4 sm:px-6 py-24 sm:py-32">
+      <Bug id="experience" className="absolute left-2 sm:left-0 top-[52%]" />
       <SectionHeader index="02" title="Experience" ghost="EXECUTION" note="// execution log, newest first" />
       <div className="mt-14 space-y-20">
         {experience.map((role) => (
-          <article key={role.company} className="grid lg:grid-cols-[1fr_1.8fr] gap-8 lg:gap-14 items-start">
+          <article key={role.company} className="grid lg:grid-cols-[1fr_1.8fr] gap-8 lg:gap-14 items-start [&>*]:min-w-0">
             {/* left: sticky role metadata */}
             <Reveal from="left">
               <div className="lg:sticky lg:top-24">

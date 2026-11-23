@@ -1,11 +1,55 @@
-import { ArrowUpRight, Mail } from 'lucide-react'
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
+import { ArrowUpRight, LockOpen, Mail } from 'lucide-react'
+import { locks, useLocks } from '../lib/locks'
 import { Reveal, SectionHeader, Tilt } from './ui'
+import { Bug } from './BugHunt'
 import { identity } from '../data/resume'
+
+/** Shown once every lock on the page is open: the suite is free and the next
+ *  adventure starts here. */
+function NextAdventure() {
+  const reduced = useReducedMotion()
+  const free = useLocks().size === locks.total
+  return (
+    <AnimatePresence>
+      {free && (
+        <motion.div
+          initial={reduced ? { opacity: 0 } : { opacity: 0, y: 30, scale: 0.96 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ type: 'spring', stiffness: 160, damping: 18, delay: 0.5 }}
+          className="mt-12 relative overflow-hidden rounded-2xl border border-pass-dim bg-ink-2 p-6 sm:p-8"
+        >
+          <div className="flex flex-wrap items-center gap-3 font-mono text-xs text-pass">
+            <LockOpen size={15} />
+            <span>
+              {locks.total}/{locks.total} assertions passed · all chains released
+            </span>
+          </div>
+          <p className="mt-4 font-display font-extrabold tracking-tight text-fog text-3xl sm:text-5xl leading-[1.05]">
+            Suite free. <span className="text-pass">Next adventure:</span> yours.
+          </p>
+          <p className="mt-3 max-w-xl text-mist">
+            That was the whole run. If you have a pipeline that needs the same treatment, the next
+            test I write could be for it.
+          </p>
+          <a
+            href={`mailto:${identity.email}?subject=Next%20adventure`}
+            className="mt-6 inline-flex items-center gap-2 bg-pass text-ink font-mono text-sm font-semibold rounded px-5 py-3 hover:bg-fog transition-colors"
+          >
+            start the next adventure <ArrowUpRight size={15} />
+          </a>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  )
+}
 
 export default function Contact() {
   return (
-    <section id="contact" className="mx-auto max-w-6xl px-4 sm:px-6 py-24 sm:py-32">
+    <section id="contact" className="relative mx-auto max-w-6xl px-4 sm:px-6 py-24 sm:py-32">
+      <Bug id="contact" className="absolute right-1/3 bottom-24" />
       <SectionHeader index="06" title="Contact" ghost="SHIP IT" note="// exit code 0" />
+      <NextAdventure />
       <div className="mt-14 grid lg:grid-cols-[1.4fr_1fr] gap-12 items-start">
         <Reveal from="left">
           <h3 className="font-display font-extrabold tracking-[-0.03em] leading-[1.02] text-fog text-4xl sm:text-6xl">

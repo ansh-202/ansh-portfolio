@@ -3,6 +3,8 @@ import { motion, useScroll } from 'framer-motion'
 import { Download, Menu, X } from 'lucide-react'
 import { identity } from '../data/resume'
 import { getLenis } from '../lib/scroll'
+import { BugCounter } from './BugHunt'
+import { LockCounter } from './Chains'
 
 /** Route anchor clicks through Lenis so smooth scroll stays buttery. */
 function goTo(e: React.MouseEvent<HTMLAnchorElement>, href: string) {
@@ -16,7 +18,9 @@ function goTo(e: React.MouseEvent<HTMLAnchorElement>, href: string) {
 
 const links = [
   { href: '#about', label: 'about' },
+  { href: '#story', label: 'run' },
   { href: '#experience', label: 'experience' },
+  { href: '#impact', label: 'impact' },
   { href: '#skills', label: 'skills' },
   { href: '#projects', label: 'projects' },
   { href: '#writing', label: 'writing' },
@@ -49,7 +53,7 @@ export default function Nav() {
           </span>
           ansh.kumar
         </a>
-        <div className="hidden md:flex items-center gap-6">
+        <div className="hidden lg:flex items-center gap-5">
           {links.map((l) => (
             <a
               key={l.href}
@@ -62,6 +66,8 @@ export default function Nav() {
           ))}
         </div>
         <div className="flex items-center gap-3">
+          <LockCounter />
+          <BugCounter />
           <a
             href={identity.resumeFile}
             download="Ansh_Kumar_Resume.pdf"
@@ -71,7 +77,7 @@ export default function Nav() {
             résumé
           </a>
           <button
-            className="md:hidden text-mist hover:text-pass transition-colors"
+            className="lg:hidden text-mist hover:text-pass transition-colors"
             aria-label={open ? 'Close menu' : 'Open menu'}
             aria-expanded={open}
             onClick={() => setOpen((v) => !v)}
@@ -81,7 +87,7 @@ export default function Nav() {
         </div>
       </nav>
       {open && (
-        <div className="md:hidden border-t border-line bg-ink/95 backdrop-blur">
+        <div className="lg:hidden border-t border-line bg-ink/95 backdrop-blur">
           <div className="mx-auto max-w-6xl px-4 py-4 flex flex-col gap-1">
             {links.map((l) => (
               <a

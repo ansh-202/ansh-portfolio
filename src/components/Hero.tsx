@@ -3,6 +3,8 @@ import { motion, useReducedMotion } from 'framer-motion'
 import { ArrowDownToLine, Mail, RotateCcw } from 'lucide-react'
 import { heroSpecs, identity } from '../data/resume'
 import { Magnetic, Tilt } from './ui'
+import { Bug } from './BugHunt'
+import Shuffle from './bits/Shuffle'
 
 const CMD = 'npx career run --candidate ansh-kumar --ci'
 
@@ -110,36 +112,46 @@ function Terminal() {
   )
 }
 
-/** Kinetic name: each letter rises out of its own clip mask, staggered. */
-function KineticName() {
-  const reduced = useReducedMotion()
-  const lines = ['Ansh', 'Kumar.']
-  let letterIndex = 0
+/** Name scrambles into place like a test resolving (React Bits Shuffle on GSAP
+ *  SplitText). It waits for the boot screen so the effect is actually seen;
+ *  hovering a line shuffles it again. */
+function KineticName({ ready }: { ready: boolean }) {
+  const type = { fontSize: 'clamp(3rem,9vw,6.5rem)', textTransform: 'none' } as const
   return (
-    <h1 className="mt-5 font-display font-extrabold tracking-[-0.03em] leading-[0.95] text-fog text-[clamp(3rem,9vw,6.5rem)]">
-      {lines.map((line) => (
-        <span key={line} className="block overflow-hidden pb-[0.06em] -mb-[0.06em]">
-          {line.split('').map((ch, i) => {
-            const d = 0.35 + letterIndex++ * 0.045
-            return (
-              <motion.span
-                key={i}
-                className={`inline-block will-change-transform ${ch === '.' ? 'text-pass' : ''}`}
-                initial={reduced ? { opacity: 0 } : { y: '110%', rotate: 9 }}
-                animate={reduced ? { opacity: 1 } : { y: 0, rotate: 0 }}
-                transition={{ duration: 0.85, delay: d, ease: [0.22, 1, 0.36, 1] }}
-              >
-                {ch}
-              </motion.span>
-            )
-          })}
+    <h1
+      aria-label="Ansh Kumar."
+      className="mt-5 font-display font-extrabold tracking-[-0.03em] leading-[0.95] text-fog"
+      style={{ fontSize: type.fontSize }}
+    >
+      {['Ansh', 'Kumar.'].map((line) => (
+        <span key={line} aria-hidden className="block pb-[0.06em] -mb-[0.06em]">
+          {ready ? (
+            <Shuffle
+              text={line}
+              tag="span"
+              textAlign="left"
+              className="font-display !leading-[0.95]"
+              style={type}
+              shuffleDirection="up"
+              duration={0.4}
+              shuffleTimes={2}
+              stagger={0.04}
+              animationMode="evenodd"
+              scrambleCharset="01<>/{}#$"
+              threshold={0}
+              rootMargin="0px"
+              triggerOnHover
+            />
+          ) : (
+            <span className="invisible">{line}</span>
+          )}
         </span>
       ))}
     </h1>
   )
 }
 
-export default function Hero() {
+export default function Hero({ ready }: { ready: boolean }) {
   const reduced = useReducedMotion()
   const rise = (delay: number) => ({
     initial: reduced ? { opacity: 0 } : { opacity: 0, y: 34 },
@@ -149,12 +161,13 @@ export default function Hero() {
 
   return (
     <section id="top" className="relative hero-grid overflow-hidden">
+      <Bug id="hero" className="absolute left-[46%] top-28 sm:top-36" />
       <div className="relative mx-auto max-w-6xl px-4 sm:px-6 pt-32 pb-20 lg:pt-40 lg:pb-28 grid lg:grid-cols-[1.1fr_1fr] gap-12 lg:gap-14 items-center">
         <div>
           <motion.p {...rise(0.05)} className="font-mono text-xs sm:text-sm text-pass tracking-widest">
             // {identity.location.toUpperCase()} · SDET · ALL CHECKS PASSING
           </motion.p>
-          <KineticName />
+          <KineticName ready={ready} />
           <motion.p {...rise(0.75)} className="mt-6 max-w-xl text-mist text-base sm:text-lg leading-relaxed">
             I don’t just write tests — I engineer the systems that decide which tests run, catch the
             ones that lie, and report the truth to 25,000+ cases’ worth of CI.

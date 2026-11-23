@@ -19,6 +19,7 @@
 }
 
 html {
+  overflow-x: clip;
   background: var(--color-ink);
   color-scheme: dark;
 }
@@ -32,15 +33,10 @@ html.lenis body {
   scroll-behavior: auto !important;
 }
 
-/* custom cursor hides the native one on fine pointers */
-@media (pointer: fine) {
-  body.custom-cursor,
-  body.custom-cursor * {
-    cursor: none !important;
-  }
-}
-
 body {
+  /* clip, not hidden: ghost words and the rotated marquee bleed past the edge,
+     and overflow:hidden would break the sticky experience column */
+  overflow-x: clip;
   font-family: var(--font-display);
   background: var(--color-ink);
   color: var(--color-fog);
@@ -63,7 +59,12 @@ body {
 }
 
 /* faint engineering grid backdrop for the hero */
-.hero-grid {
+/* the grid fades out on its own layer, so the mask never dims the hero content */
+.hero-grid::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
   background-image:
     linear-gradient(to right, rgba(81, 224, 126, 0.035) 1px, transparent 1px),
     linear-gradient(to bottom, rgba(81, 224, 126, 0.035) 1px, transparent 1px);

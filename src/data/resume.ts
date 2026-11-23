@@ -1,5 +1,7 @@
-// Single source of truth for all site content. Everything here is taken from
-// the resume (Resume.pdf) — do not add achievements or metrics that are not in it.
+// Single source of truth for all site content. Sources: the resume (Resume.pdf) and,
+// for the 2026 Brevo work, the owner's own Jira tickets (May–Nov 2026) rewritten as
+// public-safe summaries — no ticket keys, internal hostnames, colleague names or
+// details of exposed credentials. Do not add metrics that are not in either source.
 
 export const identity = {
   name: 'Ansh Kumar',
@@ -50,8 +52,32 @@ export const experience: Role[] = [
     period: 'Mar 2025 — Present',
     status: 'RUNNING',
     summary:
-      'Reliability engineering for a test estate of 25,000+ cases across UI, API, and email delivery.',
+      'Reliability engineering for a test estate of 25,000+ cases — and in 2026, the migration, Jenkins and agentic work that moved it onto Playwright.',
     log: [
+      {
+        tag: 'migration',
+        text: 'Built a deterministic-first Selenium → Playwright migration pipeline: a Java extractor emits a self-contained migration contract per test class, a templater generates page objects, and an AI agent is called only for locators the live run could not resolve — the recipe behind migrating 924 legacy page objects.',
+      },
+      {
+        tag: 'migration',
+        text: 'Led the split of a Playwright monolith into the product repos that own the code, across 8 product domains — tests routed by a tag they already carried, exact count parity against a routing manifest, and three green nightlies before any legacy copy was deleted.',
+      },
+      {
+        tag: 'jenkins',
+        text: 'Took Jenkins nightly coverage from 2 scheduled modules to 28, covering all 530 specs — cron slots balanced on real test counts, with per-domain Slack owners on every run.',
+      },
+      {
+        tag: 'jenkins',
+        text: 'Made the Jenkins health check self-healing: builds stuck over 6h get a liveness check, frozen ones are safely aborted with a diagnosis thread, still-working ones get a plain-English explanation — and human-started builds are never touched.',
+      },
+      {
+        tag: 'agentic',
+        text: 'Wrote the AGENTS.md standards and guardrails that AI coding agents follow in the test repos — a four-layer page/component/workflow/spec model, composite actions and duplicate checks — so agent-written tests land consistent and reviewable.',
+      },
+      {
+        tag: 'agentic',
+        text: 'Building the UI Explorer agent in an AI QA chain: it opens a PR’s build in a signed-in browser, reaches each approved test case’s state and harvests real locators and API calls from the live page.',
+      },
       {
         tag: 'platform',
         text: 'Engineered a full-stack test analytics and reporting platform — centralized execution storage, interactive dashboards, virtual scrolling — cutting HTML report size by 60–80% and rendering 25,000+ case suites smoothly.',
@@ -151,6 +177,31 @@ export const skillGroups = [
   },
 ]
 
+/** 2026 impact tiles (Jira, May–Nov 2026). `value` animates as a counter. */
+export type Impact = {
+  value: number
+  prefix?: string
+  suffix?: string
+  label: string
+  detail: string
+  wide?: boolean
+}
+
+export const impact2026: Impact[] = [
+  {
+    value: 924,
+    label: 'Selenium page objects',
+    detail: 'given a repeatable Playwright migration recipe — deterministic first, AI last',
+    wide: true,
+  },
+  { value: 5, label: 'pipeline phases', detail: 'extract → template → live run → residue → agent' },
+  { value: 8, label: 'product domains', detail: 'tests split out of a monolith with exact count parity' },
+  { value: 28, prefix: '2 → ', label: 'Jenkins nightlies', detail: 'per-module schedulers' },
+  { value: 530, label: 'specs on nightly', detail: 'every module with tests now runs every night' },
+  { value: 6, suffix: 'h', label: 'self-heal trigger', detail: 'stuck builds get a liveness check and a safe abort' },
+  { value: 4, prefix: 'Agent ', label: 'in the AI QA chain', detail: 'UI Explorer harvests real locators from a live PR build' },
+]
+
 export type Project = {
   id: string
   name: string
@@ -163,6 +214,48 @@ export type Project = {
 export const projects: Project[] = [
   {
     id: 'PRJ-01',
+    name: 'Deterministic-First Selenium → Playwright Migration',
+    problem:
+      '924 Selenium page objects needed to move to Playwright. Letting an AI agent translate them freehand would be slow, expensive and unreviewable at that scale.',
+    approach:
+      'A phased pipeline: a Java extractor turns each test class into a self-contained migration contract; a templater generates page objects with no AI at all; a live run captures DOM residue; the agent resolves only what is left, and a browser agent is the last resort. Additive merges never overwrite existing pages, and brittle XPath is upgraded to semantic locators verified live.',
+    impact: [
+      'Repeatable recipe for 924 page objects',
+      'First migrated class green on a live run',
+      'Modules migrated: forms, CRM, segmentation, data activation',
+    ],
+    stack: ['Java', 'JavaParser', 'TypeScript', 'Playwright', 'AI agents'],
+  },
+  {
+    id: 'PRJ-02',
+    name: 'Monolith → Product-Repo Test Segregation',
+    problem:
+      'Every product’s Playwright tests lived in one monolith — one repo, one CI suite — so product teams never ran the tests for the code they had just changed.',
+    approach:
+      'Routed each test to the repo that owns its code using the repo tag every test already carried, with the shared engine consumed as a published package. Definition of done: exact count parity, typecheck and collection green on staging and prod, and three consecutive green nightlies before deletion — plus deleting dead schedulers so nothing goes green with zero tests run.',
+    impact: [
+      '8 product domains segregated',
+      'Tests now run on the owning team’s PR gate',
+      'Framework upgrades become a version bump',
+    ],
+    stack: ['Playwright', 'TypeScript', 'Jenkins', 'GitHub Actions', 'npm packages'],
+  },
+  {
+    id: 'PRJ-03',
+    name: 'Self-Healing Jenkins Nightlies',
+    problem:
+      'Only 2 modules ran on a nightly schedule, so regressions in the rest went unnoticed — and builds that hung for hours had to be found and killed by hand.',
+    approach:
+      'Per-module Jenkins schedulers for every module with tests, staggered on real test counts. A health check that gives any build over 6h a liveness check: a frozen log is safely aborted with a diagnosis thread in Slack, a still-working build gets a plain-English explanation instead, and human-started builds are never touched. Rolled out in dry-run mode first.',
+    impact: [
+      'Nightly modules: 2 → 28',
+      'All 530 specs on a schedule',
+      'Stuck builds diagnosed and healed automatically',
+    ],
+    stack: ['Jenkins', 'Groovy', 'Shared libraries', 'Slack API'],
+  },
+  {
+    id: 'PRJ-04',
     name: 'Test Analytics & Reporting Platform',
     problem:
       'At 25,000+ test cases, standard HTML reports became too heavy to render and too noisy to triage — release decisions were waiting on reports that barely loaded.',
@@ -176,7 +269,7 @@ export const projects: Project[] = [
     stack: ['Java', 'TestNG', 'JavaScript', 'Allure', 'Jenkins'],
   },
   {
-    id: 'PRJ-02',
+    id: 'PRJ-05',
     name: 'Flaky-Test Detection & Auto-Recovery',
     problem:
       'Flaky tests were burning CI time and trust — false-positive alerts made real failures easy to ignore.',
@@ -189,7 +282,7 @@ export const projects: Project[] = [
     stack: ['Java', 'TestNG', 'Jenkins', 'Trend analysis'],
   },
   {
-    id: 'PRJ-03',
+    id: 'PRJ-06',
     name: 'AI-Driven Smart Regression Framework',
     problem:
       'Running the full regression suite on every change made CI slow and expensive — most executed tests were untouched by the change under test.',
@@ -199,7 +292,7 @@ export const projects: Project[] = [
     stack: ['Java', 'AI-assisted selection', 'CI/CD'],
   },
   {
-    id: 'PRJ-04',
+    id: 'PRJ-07',
     name: 'React-Aware SVG/Canvas Automation Utilities',
     problem:
       'Drag-and-drop over SVG and canvas in a React app is invisible to Selenium Actions — entire user journeys were unautomatable.',
